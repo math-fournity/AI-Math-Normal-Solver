@@ -240,6 +240,7 @@ tmux kill-session -t pipe-feeder
 | `concurrency_safety_check.py` | 并发安全检查 | `python concurrency_safety_check.py` |
 | `fix_orphan_running.py` | 修复孤儿running记录 | `python fix_orphan_running.py` |
 | `recover_lost_problems.py` | 恢复runner launch失败后从队列丢失的题 | `python recover_lost_problems.py [--dry-run]` |
+| `check_exports.py` | 全量检查solved题的export文件存在性和大小合理性 | `python check_exports.py [--sample N|--recent N]` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
