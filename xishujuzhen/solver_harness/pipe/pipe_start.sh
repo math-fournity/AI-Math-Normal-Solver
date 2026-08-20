@@ -20,8 +20,9 @@ set -e
 export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 REPO=/Users/user/glm5.2-math-worktree
+SOLVER_REPO=/Users/user/AI-Math-Normal-Solver
 PY=$REPO/.venv/bin/python3
-export PYTHONPATH=$REPO/xishujuzhen/solver_harness/pipe
+export PYTHONPATH=$SOLVER_REPO/xishujuzhen/solver_harness/pipe
 
 CONCURRENCY=${1:-30}
 
@@ -77,7 +78,7 @@ echo "  ✅ .env: ARANGO_DB=$ARANGO_DB"
 # === 2. 恢复crash ===
 echo ""
 echo "[2/5] 恢复crash（清理zombie + 修复DB）..."
-$PY $REPO/xishujuzhen/solver_harness/pipe/recover_from_crash.py 2>&1 | tail -8
+$PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/recover_from_crash.py 2>&1 | tail -8
 
 # === 3. 设置并发数 ===
 echo ""
@@ -99,39 +100,39 @@ for svc in pipe-feeder pipe-runner pipe-collector pipe-reporter pipe-retry pipe-
 done
 
 tmux new-session -d -s pipe-feeder \
-    "while true; do $PY $REPO/xishujuzhen/solver_harness/pipe/feeder.py --tier 1,2,3 --batch-size 500 --low-water-mark 1000 2>&1; echo '[auto-restart] feeder退出, 5秒后重启...'; sleep 5; done"
+    "while true; do $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/feeder.py --tier 1,2,3 --batch-size 500 --low-water-mark 1000 2>&1; echo '[auto-restart] feeder退出, 5秒后重启...'; sleep 5; done"
 echo "  ✅ pipe-feeder (--tier 1,2,3 --low-water-mark 1000)"
 
 tmux new-session -d -s pipe-runner \
-    "while true; do PYTHONPATH=$PYTHONPATH $PY $REPO/xishujuzhen/solver_harness/pipe/runner.py --poll-interval 5 --print-mode 2>&1; echo '[auto-restart] runner退出, 5秒后重启...'; sleep 5; done"
+    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/runner.py --poll-interval 5 --print-mode 2>&1; echo '[auto-restart] runner退出, 5秒后重启...'; sleep 5; done"
 echo "  ✅ pipe-runner (--print-mode)"
 
 tmux new-session -d -s pipe-collector \
-    "while true; do PYTHONPATH=$PYTHONPATH $PY $REPO/xishujuzhen/solver_harness/pipe/collector.py --poll-interval 10 --timeout 1800 --print-mode 2>&1; echo '[auto-restart] collector退出, 5秒后重启...'; sleep 5; done"
+    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/collector.py --poll-interval 10 --timeout 1800 --print-mode 2>&1; echo '[auto-restart] collector退出, 5秒后重启...'; sleep 5; done"
 echo "  ✅ pipe-collector (--print-mode --timeout 1800)"
 
 tmux new-session -d -s pipe-reporter \
-    "while true; do PYTHONPATH=$PYTHONPATH $PY $REPO/xishujuzhen/solver_harness/pipe/reporter.py --interval 60 2>&1; echo '[auto-restart] reporter退出, 5秒后重启...'; sleep 5; done"
+    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/reporter.py --interval 60 2>&1; echo '[auto-restart] reporter退出, 5秒后重启...'; sleep 5; done"
 echo "  ✅ pipe-reporter (--interval 60)"
 
 tmux new-session -d -s pipe-retry \
-    "while true; do PYTHONPATH=$PYTHONPATH $PY $REPO/xishujuzhen/solver_harness/pipe/retry_infrastructure.py --max-retries 3 --interval 60 2>&1; echo '[auto-restart] retry退出, 5秒后重启...'; sleep 5; done"
+    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/retry_infrastructure.py --max-retries 3 --interval 60 2>&1; echo '[auto-restart] retry退出, 5秒后重启...'; sleep 5; done"
 echo "  ✅ pipe-retry (--max-retries 3)"
 
 # === 5. 启动Monitor Pipe ===
 echo ""
 echo "[5/6] 启动Monitor Pipe..."
 tmux new-session -d -s pipe-monitor \
-    "while true; do PYTHONPATH=$PYTHONPATH $PY $REPO/xishujuzhen/solver_harness/pipe/monitor_pipe.py --interval 300 --concurrency $CONCURRENCY 2>&1; echo '[auto-restart] monitor退出, 5秒后重启...'; sleep 5; done"
+    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/monitor_pipe.py --interval 300 --concurrency $CONCURRENCY 2>&1; echo '[auto-restart] monitor退出, 5秒后重启...'; sleep 5; done"
 echo "  ✅ pipe-monitor (interval=300s, concurrency=$CONCURRENCY)"
-echo "     检查脚本: bash $REPO/xishujuzhen/solver_harness/pipe/scripts/monitor_check.sh"
+echo "     检查脚本: bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/scripts/monitor_check.sh"
 
 # === 6. watchdog（已移除 launchd，不自动启动）===
 # 2026-08-18: 用户决定 solver 系统不进入 launchd。
-# 如需 watchdog，手动运行：bash $REPO/xishujuzhen/solver_harness/pipe/pipe_watchdog.sh
+# 如需 watchdog，手动运行：bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_watchdog.sh
 echo ""
 echo "[6/6] watchdog: 已移除 launchd（solver系统不自动启动）"
-echo "  如需手动运行: bash $REPO/xishujuzhen/solver_harness/pipe/pipe_watchdog.sh"
+echo "  如需手动运行: bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_watchdog.sh"
 
 # === 完成 ===
 echo ""
@@ -144,7 +145,7 @@ echo "  feeder: --tier 1,2,3 (246万题全自动)"
 echo "  monitor: Monitor Pipe持续监控（8项自动检查+AI review抽样）"
 echo "  watchdog: 守护5个服务 + 定期清理zombie"
 echo ""
-echo "  检查健康: PYTHONPATH=$PYTHONPATH $PY $REPO/xishujuzhen/solver_harness/pipe/pipe_control.py health"
-echo "  Monitor检查: bash $REPO/xishujuzhen/solver_harness/pipe/scripts/monitor_check.sh"
-echo "  停止系统: bash $REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh"
+echo "  检查健康: PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_control.py health"
+echo "  Monitor检查: bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/scripts/monitor_check.sh"
+echo "  停止系统: bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh"
 echo ""

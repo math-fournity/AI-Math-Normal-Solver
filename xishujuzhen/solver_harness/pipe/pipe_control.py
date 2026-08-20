@@ -27,7 +27,8 @@ from redis_queue import (
 )
 
 PIPE_DIR = Path(__file__).parent
-VENV_PYTHON = Path(__file__).parent.parent.parent.parent / ".venv" / "bin" / "python3"
+# .venv 在原repo（/Users/user/glm5.2-math-worktree/.venv），不在本repo
+VENV_PYTHON = Path(os.environ.get("VENV_PYTHON", "/Users/user/glm5.2-math-worktree/.venv/bin/python3"))
 
 SESSIONS = {
     "feeder": {"script": "feeder.py", "args": []},

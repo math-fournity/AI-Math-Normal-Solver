@@ -42,7 +42,9 @@ PROBLEMS_DIR = PIPE_DIR / "problems"
 
 # solver_harness.py的路径
 HARNESS_SCRIPT = Path(__file__).parent.parent / "solver_harness.py"
-VENV_PYTHON = Path(__file__).parent.parent.parent.parent / ".venv" / "bin" / "python3"
+# .venv 在原repo（/Users/user/glm5.2-math-worktree/.venv），不在本repo
+# 优先用环境变量 VENV_PYTHON，回退到原repo的绝对路径
+VENV_PYTHON = Path(os.environ.get("VENV_PYTHON", "/Users/user/glm5.2-math-worktree/.venv/bin/python3"))
 
 
 def load_problem_text(db, problem_key: str) -> str:

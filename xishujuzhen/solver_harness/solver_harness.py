@@ -33,7 +33,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # 导入protobuf解码器（模块级，供_extract_session_id使用）
-sys.path.insert(0, str(Path(__file__).parent.parent / "mitm_thinking_intercept"))
+# mitm_thinking_intercept 目录在原repo（/Users/user/glm5.2-math-worktree），
+# 本repo不含此目录，需要fallback到原repo路径
+_mitm_dir = Path(__file__).parent.parent / "mitm_thinking_intercept"
+if not _mitm_dir.exists():
+    _mitm_dir = Path("/Users/user/glm5.2-math-worktree/xishujuzhen/mitm_thinking_intercept")
+sys.path.insert(0, str(_mitm_dir))
 from decode_connect_proto import extract_streaming_data, parse_connect_stream, decode_protobuf
 
 # ============================================================
