@@ -80,14 +80,21 @@ echo ""
 echo "[2/5] 恢复crash（清理zombie + 修复DB）..."
 $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/recover_from_crash.py 2>&1 | tail -8
 
-# === 3. 设置并发数 ===
+# === 3. 设置并发数 + 记录启动时间 ===
 echo ""
 echo "[3/5] 设置并发数: $CONCURRENCY"
 $PY -c "
 from redis_queue import get_redis
+import time
 r = get_redis()
 r.set('math:config:concurrency', $CONCURRENCY)
+# 记录系统启动时间（Unix时间戳+ISO格式），供check_progress.py计算真实运行时长
+start_ts = time.time()
+r.set('math:system:start_time', start_ts)
+from datetime import datetime, timezone
+iso = datetime.fromtimestamp(start_ts, tz=timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 print(f'  ✅ 并发数已设置: {r.get(\"math:config:concurrency\")}')
+print(f'  ✅ 系统启动时间已记录: {iso} (ts={start_ts})')
 "
 
 # === 4. 启动5个服务 ===
