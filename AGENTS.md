@@ -219,6 +219,7 @@ tmux kill-session -t pipe-feeder
 | `filter_pending_by_tier.py` | 从Redis pending队列中移除非指定tier的题 | `python filter_pending_by_tier.py --tier 1 [--dry-run]` |
 | `concurrency_safety_check.py` | 并发安全检查 | `python concurrency_safety_check.py` |
 | `fix_orphan_running.py` | 修复孤儿running记录 | `python fix_orphan_running.py` |
+| `recover_lost_problems.py` | 恢复runner launch失败后从队列丢失的题 | `python recover_lost_problems.py [--dry-run]` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
