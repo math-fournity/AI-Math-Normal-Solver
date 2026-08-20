@@ -47,6 +47,26 @@
 
 ---
 
+## 运维认知
+
+以下认知在监控/健康检查时容易误判，必须牢记：
+
+### 空pane是thinking spin的正常现象
+
+devin cli以非交互模式（`-p`）启动后，首先进入thinking spin阶段——AI在思维链中推理，不输出任何内容到TUI pane。此时`tmux capture-pane`抓到的是空pane，`tmux_pipe.log`是0字节。这是**正常行为**，不是卡住。
+
+health检查中的"空pane僵尸"告警，绝大多数是处于thinking spin阶段的正常session。判定session是否真正死亡的正确方法：看`pipe.log`中是否有`DEVIN_CLI_EXITED`标记（collector的判定逻辑，见`collector.py`第428-436行）。pane空只代表还没输出，不代表死了。
+
+### devin cli刚启动就退出的应对
+
+devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进程crash等）。pipe系统已完整应对：
+
+- **collector判定**：devin cli退出但无proof → 判定为`dead_session`（`collector.py`第428-436行）；tmux session不存在且无`DEVIN_CLI_EXITED`且elapsed>60s → 判定为`crash_recovered`（第442-444行）
+- **retry自动重试**：`dead_session`/`launch_error`/`crash_recovered`属于基础设施失败（`INFRA_FAILURES`），`retry_infrastructure.py`会自动将它们重新入pending队列（最多`--max-retries 3`次）
+- **模型能力失败不重试**：`failed_token_limit`/`ai_gave_up`/`failed_thinking_spin`等属于模型能力失败（`MODEL_FAILURES`），不重试，作为Profile数据保留
+
+---
+
 ## 文档索引
 
 **回答问题前，先判断需要加载哪些文档：**
