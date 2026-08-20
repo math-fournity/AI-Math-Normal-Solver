@@ -345,7 +345,25 @@ tmux kill-session -t pipe-feeder
 
 | Rule | 用途 |
 |---|---|
-| `solver-batch-health-check.md` | 批量解题系统健康检查规则 |
+| `solver-batch-health-check.md` | 批量解题系统健康检查规则（三条铁律+7项检查清单+并发上限经验） |
+| `solver-concurrency.md` | Solver并发约束（3秒启动间隔铁律+并发经验表40/50/60/80/100实测数据+Redis实时调整命令） |
+| `solver-tmux-launch.md` | solver-harness调试启动规则（tmux实时观察devin cli行为，加`--no-mitm`） |
+
+### Templates（templates/）
+
+| 文件 | 用途 |
+|---|---|
+| `solver_agents_md.md` | Solver角色AGENTS.md模板（bare模式——直接做数学，无提示） |
+| `solver_agents_md_guided.md` | Solver角色AGENTS.md模板（guided模式——含提示引导） |
+
+### dev-docs（解题系统文档）
+
+| 文档 | 用途 |
+|---|---|
+| `dev-docs/391-v0-2026-08-17-解题系统MonitorPipe-参考错题分析系统的持续监控方案.md` | Monitor Pipe设计方案（13项自动检查+AI review抽样） |
+| `dev-docs/旧模式batch_problem_runner系统说明.md` | 第一代批量系统架构说明（已归档，pipe系统前身） |
+| `dev-docs/旧模式batch_problem_runner操作SOP.md` | 第一代批量系统操作SOP（16个SOP，已归档） |
+| `dev-docs/旧模式auto_runner系统说明.md` | 第二代批量系统架构说明（已归档，过渡方案） |
 
 ### 全局Skill（不在本repo中）
 
