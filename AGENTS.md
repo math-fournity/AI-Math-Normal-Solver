@@ -77,6 +77,7 @@ devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进�
 | Solver运行操作SOP（编译验证SOP G1/资产追溯SOP G2/失败分类SOP G3） | `SolverOpsSOP.md` |
 | 查询解题结果/失败题/运行资产位置/追溯方法/16种终态status分类 | `解题系统审计方法.md` |
 | 解题系统进展交接（tier=1进度/6.6检测修复/已知问题/待办） | `dev-docs/398-v0-2026-08-19-解题系统进展交接文档.md` |
+| tier=1做题结果调查报告（调查方法+三大类分类统计+关键发现） | `dev-docs/402-v0-2026-08-21-tier1做题结果调查报告.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
@@ -225,7 +226,7 @@ tmux kill-session -t pipe-feeder
 | `check_answer_leak.py` | 答案泄漏检查 | 被feeder调用 |
 | `extract_solve_time.py` | 精确解题时间提取（从tmux_pipe.log的mtime） | 被collector调用 |
 | `prepare_queue.py` | 队列准备：从难题开始分层入队 | `python prepare_queue.py` |
-| `query_failures.py` | 失败分类统计查询 | `python query_failures.py` |
+| `query_failures.py` | 失败分类统计查询（支持`--by-category --tier N`按三大类分类） | `python query_failures.py --by-category --tier 1` |
 | `query_progress.py` | 运行进度查询 | `python query_progress.py` |
 | `reclassify_failed.py` | 重新分类被误判的failed记录 | `python reclassify_failed.py` |
 | `verify_completeness.py` | 数据完备性验证 | `python verify_completeness.py --all` |
