@@ -31,17 +31,17 @@ SOLVER_REPO=/Users/user/AI-Math-Normal-Solver
 PY=$REPO/.venv/bin/python3
 export PYTHONPATH=$SOLVER_REPO/xishujuzhen/solver_harness/pipe
 
-# 解析参数：支持并发数（位置参数）和--no-feeder（标志参数）
+# 解析参数：支持并发数（位置参数）和--no-feeder/--max-retries（标志参数）
 NO_FEEDER=false
 CONCURRENCY=30
-for arg in "$@"; do
-    case $arg in
-        --no-feeder) NO_FEEDER=true ;;
-        --max-retries) shift; MAX_RETRIES=$1 ;;
-        *) CONCURRENCY=$arg ;;
+MAX_RETRIES=3
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --no-feeder) NO_FEEDER=true; shift ;;
+        --max-retries) MAX_RETRIES=$2; shift 2 ;;
+        *) CONCURRENCY=$1; shift ;;
     esac
 done
-MAX_RETRIES=${MAX_RETRIES:-3}
 
 echo "=========================================="
 echo "  启动做题系统 (并发: $CONCURRENCY)"
