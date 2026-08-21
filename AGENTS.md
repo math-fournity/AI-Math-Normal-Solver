@@ -108,6 +108,7 @@ devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进�
 | 解题系统进展交接（tier=1进度/6.6检测修复/已知问题/待办） | `dev-docs/398-v0-2026-08-19-解题系统进展交接文档.md` |
 | tier=1做题结果调查报告（调查方法+三大类分类统计+关键发现） | `dev-docs/402-v0-2026-08-21-tier1做题结果调查报告.md` |
 | 平凡解题系统队列准备方案（一次性入队2809题，之后不启动feeder） | `dev-docs/403-v0-2026-08-21-平凡解题系统队列准备方案.md` |
+| 题目清洗系统方案（用AI清洗答案泄漏题，提取纯净题目+答案，原始数据保留到original字段） | `dev-docs/404-v0-2026-08-21-题目清洗系统方案.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
