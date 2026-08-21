@@ -244,6 +244,7 @@ tmux kill-session -t pipe-feeder
 | `check_exports.py` | 全量检查solved题的export文件存在性和大小合理性 | `python check_exports.py [--sample N|--recent N]` |
 | `check_and_report.py` | 系统统计+export结构完整性检查（增量，DB标记已检查过的） | `python check_and_report.py [--recheck|--stats-only|--limit N]` |
 | `check_retry_effect.py` | 验证retry效果：按每题最后run vs 按所有run统计（正确调查AI未解决问题） | `python check_retry_effect.py --tier 1` |
+| `check_tier1_remaining.py` | 查tier还有哪些题需要解决（从未处理/应重试/看情况/不应重试） | `python check_tier1_remaining.py --tier 1` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
