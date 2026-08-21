@@ -139,6 +139,11 @@ bash xishujuzhen/solver_harness/pipe/pipe_start.sh
 # 启动时指定并发
 bash xishujuzhen/solver_harness/pipe/pipe_start.sh 15    # 并发15
 
+# 最终队列模式启动（不启动feeder，只处理pending队列中已有的3,448题）
+# 用户要求仅处理tier=1的最终队列，不从ArangoDB取新题。队列消费完后系统自然停止。
+# 详见 dev-docs/403-v0-2026-08-21-平凡解题系统队列准备方案.md
+bash xishujuzhen/solver_harness/pipe/pipe_start.sh --no-feeder --max-retries 6
+
 # 优雅停止（两步）
 bash xishujuzhen/solver_harness/pipe/pipe_stop.sh          # 停feeder/runner等，保留collector
 bash xishujuzhen/solver_harness/pipe/pipe_stop.sh --finish  # 等running=0后，停collector

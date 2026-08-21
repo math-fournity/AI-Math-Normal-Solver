@@ -2,14 +2,21 @@
 # pipe_start.sh — 完整启动做题系统
 #
 # 用法:
-#   bash pipe_start.sh              # 默认30并发
-#   bash pipe_start.sh 60           # 60并发
+#   bash pipe_start.sh                          # 默认30并发，启动feeder
+#   bash pipe_start.sh 60                       # 60并发，启动feeder
+#   bash pipe_start.sh --no-feeder              # 默认30并发，不启动feeder（最终队列模式）
+#   bash pipe_start.sh 60 --no-feeder           # 60并发，不启动feeder
+#
+# --no-feeder: 不启动feeder，只处理Redis pending队列中已有的题。
+#   用于"最终队列模式"——队列已由prepare_final_queue.py一次性填充3,448题，
+#   不需要feeder从ArangoDB取新题。队列消费完后系统自然停止。
+#   详见 dev-docs/403-v0-2026-08-21-平凡解题系统队列准备方案.md
 #
 # 这个脚本做6件事:
 # 1. 前置检查（Redis/ArangoDB/D盘）
 # 2. 恢复crash（清理zombie + 修复DB）
 # 3. 设置并发数
-# 4. 启动5个pipe-*服务（auto-restart模式）
+# 4. 启动5个pipe-*服务（auto-restart模式，--no-feeder时跳过feeder）
 # 5. 启动Monitor Pipe（持续监控+alert+AI review抽样）
 # 6. 启动launchd watchdog（守护服务+定期清理zombie）
 #
@@ -24,10 +31,23 @@ SOLVER_REPO=/Users/user/AI-Math-Normal-Solver
 PY=$REPO/.venv/bin/python3
 export PYTHONPATH=$SOLVER_REPO/xishujuzhen/solver_harness/pipe
 
-CONCURRENCY=${1:-30}
+# 解析参数：支持并发数（位置参数）和--no-feeder（标志参数）
+NO_FEEDER=false
+CONCURRENCY=30
+for arg in "$@"; do
+    case $arg in
+        --no-feeder) NO_FEEDER=true ;;
+        --max-retries) shift; MAX_RETRIES=$1 ;;
+        *) CONCURRENCY=$arg ;;
+    esac
+done
+MAX_RETRIES=${MAX_RETRIES:-3}
 
 echo "=========================================="
 echo "  启动做题系统 (并发: $CONCURRENCY)"
+if [ "$NO_FEEDER" = true ]; then
+    echo "  模式: 最终队列（不启动feeder）"
+fi
 echo "=========================================="
 
 # === 1. 前置检查 ===
@@ -106,9 +126,13 @@ for svc in pipe-feeder pipe-runner pipe-collector pipe-reporter pipe-retry pipe-
     tmux kill-session -t $svc 2>/dev/null || true
 done
 
-tmux new-session -d -s pipe-feeder \
-    "while true; do $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/feeder.py --tier 1,2,3 --batch-size 500 --low-water-mark 1000 2>&1; echo '[auto-restart] feeder退出, 5秒后重启...'; sleep 5; done"
-echo "  ✅ pipe-feeder (--tier 1,2,3 --low-water-mark 1000)"
+if [ "$NO_FEEDER" = true ]; then
+    echo "  ⏭️  pipe-feeder: 跳过（--no-feeder模式，只处理pending队列中已有的题）"
+else
+    tmux new-session -d -s pipe-feeder \
+        "while true; do $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/feeder.py --tier 1,2,3 --batch-size 500 --low-water-mark 1000 2>&1; echo '[auto-restart] feeder退出, 5秒后重启...'; sleep 5; done"
+    echo "  ✅ pipe-feeder (--tier 1,2,3 --low-water-mark 1000)"
+fi
 
 tmux new-session -d -s pipe-runner \
     "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/runner.py --poll-interval 5 --print-mode 2>&1; echo '[auto-restart] runner退出, 5秒后重启...'; sleep 5; done"
@@ -123,8 +147,8 @@ tmux new-session -d -s pipe-reporter \
 echo "  ✅ pipe-reporter (--interval 60)"
 
 tmux new-session -d -s pipe-retry \
-    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/retry_infrastructure.py --max-retries 3 --interval 60 2>&1; echo '[auto-restart] retry退出, 5秒后重启...'; sleep 5; done"
-echo "  ✅ pipe-retry (--max-retries 3)"
+    "while true; do PYTHONPATH=$PYTHONPATH $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/retry_infrastructure.py --max-retries $MAX_RETRIES --interval 60 2>&1; echo '[auto-restart] retry退出, 5秒后重启...'; sleep 5; done"
+echo "  ✅ pipe-retry (--max-retries $MAX_RETRIES)"
 
 # === 5. 启动Monitor Pipe ===
 echo ""
@@ -148,7 +172,12 @@ echo "  启动完成!"
 echo "=========================================="
 echo ""
 echo "  并发: $CONCURRENCY"
-echo "  feeder: --tier 1,2,3 (246万题全自动)"
+if [ "$NO_FEEDER" = true ]; then
+    echo "  feeder: 未启动（--no-feeder模式，只处理pending队列中已有的题）"
+else
+    echo "  feeder: --tier 1,2,3 (246万题全自动)"
+fi
+echo "  retry: --max-retries $MAX_RETRIES"
 echo "  monitor: Monitor Pipe持续监控（8项自动检查+AI review抽样）"
 echo "  watchdog: 守护5个服务 + 定期清理zombie"
 echo ""
