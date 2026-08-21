@@ -293,7 +293,7 @@ tmux kill-session -t pipe-feeder
 
 ## 数据库表设计
 
-> **完整表结构见 `DATABASE.md`**——写查数据库脚本前必须先读。
+> **完整表结构见 `/Users/user/database/AI-Math-Normal-Solver.md`**——写查数据库脚本前必须先读。
 > 5个ArangoDB集合（problem_extraction_progress/devin_problem_runs/devin_batch_runs/devin_run_events/pipe_monitor_alerts）+ Redis队列。
 > 关键JOIN：`problem_extraction_progress._key` = `devin_problem_runs.problem_id`
 > ⚠️ `devin_problem_runs.difficulty_tier`通常为null，统计时必须用_key JOIN problem_id。
