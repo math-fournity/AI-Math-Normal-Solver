@@ -105,6 +105,8 @@
 | `check_retry_effect.py` | 验证retry效果：按每题最后run vs 按所有run统计（正确调查AI未解决问题） | `python check_retry_effect.py --tier 1` |
 | `check_tier1_remaining.py` | 查tier还有哪些题需要解决（从未处理/应重试/看情况/不应重试） | `python check_tier1_remaining.py --tier 1` |
 | `reenqueue_leak_problems.py` | 把被误判为answer_leak的639题重新入队（泄漏检测已取消） | `python reenqueue_leak_problems.py [--dry-run]` |
+| `prepare_final_queue.py` | 最终队列准备：清空pending/failed/completed + 一次性入队3,448题 | `python prepare_final_queue.py [--dry-run]` |
+| `recheck_final_queue.py` | 验证math:pending中的题是否都属于正确类别 | `python recheck_final_queue.py [--verbose]` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
