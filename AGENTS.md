@@ -293,29 +293,11 @@ tmux kill-session -t pipe-feeder
 
 ## 数据库表设计
 
-### ArangoDB集合（DB: `xishujuzhen_math_glm52`）
-
-| 集合 | 用途 | 关键字段 | 索引 |
-|---|---|---|---|
-| `problem_extraction_progress` | 题库（246万题） | `_key`, `problem_id`, `difficulty_tier`, `extraction_status`, `source_dataset`, `external_ref.local_path`, `priority` | `difficulty_tier`, `extraction_status`, `[difficulty_tier, extraction_status]` |
-| `devin_problem_runs` | 每次run的记录 | `exp_id`, `problem_id`, `batch_id`, `status`, `ended_at`, `runtime_seconds`, `solve_time_seconds`, `end_reason`, `pane_snapshot`, `verdict` | `batch_id`, `progress_key`, `problem_id`, `status`, `exp_id` |
-| `devin_batch_runs` | 批次记录 | `batch_id`, `concurrency`, `status`, `attempt_keys` | — |
-| `devin_run_events` | 事件流 | `concurrency_changed`, `cases_added`, `answer_leak_detected`等 | — |
-| `pipe_monitor_alerts` | Monitor Pipe告警 | `alert_key`, `status` | — |
-
-**关键JOIN**：`problem_extraction_progress._key` = `devin_problem_runs.problem_id`
-
-> **⚠️ difficulty_tier字段不一致**：`problem_extraction_progress`中tier=1的题在`devin_problem_runs`中`difficulty_tier`被标记为`null`。统计进度时必须用`_key` JOIN `problem_id`，不能按`difficulty_tier`过滤`devin_problem_runs`。
-
-> **⚠️ paths字段缺失**：`devin_problem_runs`中`batch_id=pipe-runner`的run（32,000+条）没有`paths`字段。通过`exp_id`直接构造路径：`/Volumes/data/math-agent-glm5.2-tmux-agents-trajectory/<exp_id>/`
-
-### Redis队列
-
-| 键 | 类型 | 用途 |
-|---|---|---|
-| `math:pending` | sorted set | 待处理队列（score=priority） |
-| `math:running` | hash | 正在运行的run（field=exp_id, value=JSON） |
-| `math:config:concurrency` | string | 并发配置（实时修改生效） |
+> **完整表结构见 `DATABASE.md`**——写查数据库脚本前必须先读。
+> 5个ArangoDB集合（problem_extraction_progress/devin_problem_runs/devin_batch_runs/devin_run_events/pipe_monitor_alerts）+ Redis队列。
+> 关键JOIN：`problem_extraction_progress._key` = `devin_problem_runs.problem_id`
+> ⚠️ `devin_problem_runs.difficulty_tier`通常为null，统计时必须用_key JOIN problem_id。
+> ⚠️ `devin_problem_runs.paths`在pipe-runner批次中缺失，通过exp_id构造路径。
 
 ---
 
