@@ -108,7 +108,7 @@ devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进�
 | 解题系统进展交接（tier=1进度/6.6检测修复/已知问题/待办） | `dev-docs/398-v0-2026-08-19-解题系统进展交接文档.md` |
 | tier=1做题结果调查报告（调查方法+三大类分类统计+关键发现） | `dev-docs/402-v0-2026-08-21-tier1做题结果调查报告.md` |
 | 平凡解题系统队列准备方案（一次性入队2809题，之后不启动feeder） | `dev-docs/403-v0-2026-08-21-平凡解题系统队列准备方案.md` |
-| 题目清洗系统方案（用AI清洗答案泄漏题，提取纯净题目+答案，原始数据保留到original字段） | `dev-docs/404-v0-2026-08-21-题目清洗系统方案.md` |
+| 题目清洗系统方案（**已废弃**→改为取消泄漏检测，调查发现原始数据本身就包含答案） | `dev-docs/404-v0-2026-08-21-题目清洗系统方案.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
@@ -276,6 +276,7 @@ tmux kill-session -t pipe-feeder
 | `check_and_report.py` | 系统统计+export结构完整性检查（增量，DB标记已检查过的） | `python check_and_report.py [--recheck|--stats-only|--limit N]` |
 | `check_retry_effect.py` | 验证retry效果：按每题最后run vs 按所有run统计（正确调查AI未解决问题） | `python check_retry_effect.py --tier 1` |
 | `check_tier1_remaining.py` | 查tier还有哪些题需要解决（从未处理/应重试/看情况/不应重试） | `python check_tier1_remaining.py --tier 1` |
+| `reenqueue_leak_problems.py` | 把被误判为answer_leak的639题重新入队（泄漏检测已取消） | `python reenqueue_leak_problems.py [--dry-run]` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
@@ -362,7 +363,7 @@ tmux kill-session -t pipe-feeder
 
 **基础设施失败**（可重试）：`rate_limited` / `dead_session` / `crash_recovered` / `failed_connection` / `launch_error`
 
-**其他**：`candidate_solved`（成功）/ `answer_leak`（AI检测到答案泄漏）/ `answer_leak_in_input`（题目含答案）/ `running` / `stopped`
+**其他**：`candidate_solved`（成功）/ `answer_leak`（~~AI检测到答案泄漏~~ **已废弃**）/ `answer_leak_in_input`（~~题目含答案~~ **已废弃**）/ `running` / `stopped`
 
 > 完整的查询方法代码示例见`解题系统审计方法.md`
 

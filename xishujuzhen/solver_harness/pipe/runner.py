@@ -264,42 +264,10 @@ def main():
                 add_failed(r, {"problem_key": problem_key, "error": "empty_problem_text", "exp_id": exp_id, "verdict": "empty_problem_text"})
                 continue
 
-            # 答案泄漏检查
-            doc = db.collection(COLLECTION).get(problem_key)
-            answer = doc.get("answer", "") if doc else ""
-            solution = doc.get("solution_text", "") if doc else ""
-            leak_found = False
-            if answer and len(str(answer).strip()) > 10:
-                ans_clean = str(answer).strip().replace(" ", "").replace("\\", "").replace("$", "").lower()
-                text_clean = problem_text.lower().replace(" ", "").replace("\\", "").replace("$", "")
-                if ans_clean in text_clean:
-                    leak_found = True
-                    logger.warning(f"答案泄漏: {problem_key} 题目文本包含answer字段值='{str(answer)[:30]}'")
-            if not leak_found and solution and len(solution.strip()) > 20:
-                sol_prefix = solution.strip()[:100].lower()
-                if sol_prefix in problem_text.lower():
-                    leak_found = True
-                    logger.warning(f"答案泄漏: {problem_key} 题目文本包含solution片段")
-            if leak_found:
-                from redis_queue import add_failed
-                add_failed(r, {
-                    "problem_key": problem_key, "exp_id": exp_id,
-                    "verdict": "answer_leak_in_input",
-                    "error": "题目文本包含答案/solution，不入running",
-                })
-                attempt_key = f"pipe_{exp_id[:40]}"
-                now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                try:
-                    db.collection(ATTEMPT_COLLECTION).insert({
-                        "_key": attempt_key, "batch_id": "pipe-runner",
-                        "problem_id": problem_key, "exp_id": exp_id,
-                        "status": "answer_leak_in_input", "verdict": "answer_leak_in_input",
-                        "started_at": now, "ended_at": now,
-                        "end_reason": "题目文本包含答案/solution",
-                    })
-                except Exception:
-                    pass
-                continue
+            # 答案泄漏检测已取消（2026-08-21）
+            # 调查发现：原始数据集的question字段本身就包含答案值（如deepmath的"验证2875"题），
+            # 这是数据集特性不是提取bug。泄漏检测会阻止正常题目进入解题系统。
+            # 详见 dev-docs/404-v0-2026-08-21-题目清洗系统方案.md 的调查结论。
 
             # 写题目文件
             problem_file = write_problem_file(problem_key, problem_text, exp_id)

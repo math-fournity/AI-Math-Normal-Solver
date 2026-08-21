@@ -350,11 +350,11 @@ def classify(attempt_meta: dict, pane_text: str, pipe_text: str, is_running: boo
                  f"is_running={is_running} pane_len={pane_len} pipe_len={pipe_len} thinking={thinking} "
                  f"timeout={timeout} stall_time={stall_time}")
 
-    # 1. 答案泄漏（最高优先级）
-    if ANSWER_LEAK_MARKER in detect_text:
-        logger.warning(f"classify判定=answer_leak: problem_key={problem_key} exp_id={exp_id} "
-                       f"检测到 '{ANSWER_LEAK_MARKER}' 标记 pane_len={pane_len} pipe_len={pipe_len} elapsed={elapsed:.0f}s")
-        return "answer_leak", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "answer_leak", "elapsed": elapsed}
+    # 1. 答案泄漏检测已取消（2026-08-21）
+    # 调查发现：原始数据集的question字段本身就包含答案值，这是数据集特性不是提取bug。
+    # AI在解题中输出"ANSWER LEAK DETECTED"是因为题目固有包含答案，不应阻止解题。
+    # 取消检测后，AI输出此标记后继续运行，由后续判定（PROOF COMPLETE/ai_gave_up/超时）决定终态。
+    # 详见 dev-docs/404-v0-2026-08-21-题目清洗系统方案.md 的调查结论。
 
     # 2. AI主动放弃——模型能力边界
     if check_ai_gave_up(detect_text):
@@ -827,10 +827,6 @@ def main():
                     add_completed(r, result)
                     completed_this_round += 1
                     logger.info(f"SOLVED {meta.get('problem_key', '')} exp_id={exp_id} ({elapsed:.0f}s)")
-                elif status == "answer_leak":
-                    add_completed(r, result)
-                    completed_this_round += 1
-                    logger.warning(f"ANSWER LEAK {meta.get('problem_key', '')} exp_id={exp_id} ({elapsed:.0f}s)")
                 elif status in INFRA_FAILURES:
                     add_failed(r, result)
                     infra_failures_this_round += 1
