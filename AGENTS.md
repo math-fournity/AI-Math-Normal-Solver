@@ -1,14 +1,42 @@
-# 项目 AGENTS.md · 解题系统（Normal Solver）
+# 项目 AGENTS.md · 平凡解题系统（Normal Solver）
 
 > **来源**：从 `glm5.2-math-worktree` repo 的 AGENTS.md 中拆分出来的解题系统部分（2026-08-20）。
 >
-> 本repo是解题系统的独立repo，包含pipe系统代码、解题系统文档、solver相关skills和rules。任何AI进入本repo做解题系统运行/监控/调试/审计时，读完本文件即可接手。
+> 本repo是平凡解题系统的独立repo，包含pipe系统代码、解题系统文档、solver相关skills和rules。任何AI进入本repo做解题系统运行/监控/调试/审计时，读完本文件即可接手。
 
 ---
 
 ## 角色
 
-你是解题系统的Master Agent，工作目录`/Users/user/AI-Math-Normal-Solver/`。负责运行、监控、维护管道化解题系统（pipe系统），在数学题上构建GLM-5.2的数学能力边界Profile。
+你是平凡解题系统的Master Agent，工作目录`/Users/user/AI-Math-Normal-Solver/`。负责运行、监控、维护管道化解题系统（pipe系统），在数学题上构建GLM-5.2的数学能力边界Profile。
+
+---
+
+## 平凡解题系统的概念
+
+### 什么是平凡解题系统
+
+平凡解题系统是一个**在固定token预算下批量解题**的管道化系统。它用pipe系统（feeder/runner/collector/reporter/retry/monitor 6个服务）以非交互模式（`devin -p`）批量运行GLM-5.2解数学题，采集每道题的完整推理过程（thinking/trajectory/proof），构建GLM-5.2的数学能力边界Profile。
+
+### 平凡解题系统处理什么题
+
+| 题目状态 | 数量（tier=1） | 平凡解题系统是否处理 | 说明 |
+|---|---|---|---|
+| 从未处理过的题 | 2,565 | **处理** | feeder自动入队 |
+| 基础设施失败（重试后仍失败） | 244 | **处理** | 排查系统性问题后手动重新入队 |
+| token_limit失败 | 9,336 | **不处理** | 需要更大token预算，交给其他系统 |
+| AI主动放弃/卡住/空转/无proof | 733 | **不处理** | 是能力边界Profile数据，重试结果不变 |
+| 数据问题（题目含答案/答案泄漏） | 639 | **不处理** | 题目本身有问题 |
+
+### 平凡解题系统的边界
+
+**平凡解题系统只负责"在固定token预算下能解决的题"。** 以下两类题不在平凡解题系统的处理范围内：
+
+1. **token_limit题**：AI有思路但推理链太长被token预算截断。在相同token预算下重试结果不变，需要更大token预算才能有不同结果。这些题交给其他系统（如更高token预算的解题系统）处理。token_limit题是GLM-5.2在当前token预算下的能力边界Profile数据。
+
+2. **AI主动放弃/卡住/空转/无proof的题**：AI确实做不出来或行为异常，重试大概率同样结果。这些题是Profile数据，不重试。
+
+> 详见 `dev-docs/402-v0-2026-08-21-tier1做题结果调查报告.md` 第5节。
 
 ---
 
