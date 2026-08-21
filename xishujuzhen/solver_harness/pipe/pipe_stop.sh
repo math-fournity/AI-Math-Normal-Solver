@@ -21,8 +21,9 @@ set -e
 export PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 REPO=/Users/user/glm5.2-math-worktree
+SOLVER_REPO=/Users/user/AI-Math-Normal-Solver
 PY=$REPO/.venv/bin/python3
-export PYTHONPATH=$REPO/xishujuzhen/solver_harness/pipe
+export PYTHONPATH=$SOLVER_REPO/xishujuzhen/solver_harness/pipe
 
 MODE="${1:-graceful}"
 
@@ -58,7 +59,7 @@ if [ "$MODE" = "--kill" ]; then
 
     echo ""
     echo "[3/3] kill解题系统harness session（harness-p{uuid}格式）..."
-    $PY $REPO/xishujuzhen/solver_harness/pipe/pipe_control.py stop --kill-harness 2>&1 | grep -E "killed|停止|服务" || true
+    $PY $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_control.py stop --kill-harness 2>&1 | grep -E "killed|停止|服务" || true
     # 只kill解题系统的session（harness-p{uuidhex}格式），不kill其他AI的session
     for s in $(tmux list-sessions 2>/dev/null | grep -E "^harness-(p|dbmon-p)[a-f0-9]{20}" | awk -F: '{print $1}'); do
         tmux kill-session -t "$s" 2>/dev/null || true
@@ -112,7 +113,7 @@ print(r.hlen('math:running'))
     echo "  收尾完成! 所有服务已停止"
     echo "=========================================="
     echo ""
-    echo "  恢复: bash $REPO/xishujuzhen/solver_harness/pipe/pipe_start.sh"
+    echo "  恢复: bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_start.sh"
     echo ""
     exit 0
 
@@ -173,13 +174,13 @@ print(r.hlen('math:running'))
     echo "  watchdog也继续运行——守护collector"
     echo ""
     echo "  ★ 等running=0后，执行收尾（停collector+watchdog）："
-    echo "    bash $REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh --finish"
+    echo "    bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh --finish"
     echo ""
     echo "  ★ 如需立即停止（collector+watchdog也停，终态下次启动时recover处理）："
-    echo "    bash $REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh --force"
+    echo "    bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh --force"
     echo ""
     echo "  ★ 如需强制kill所有harness session："
-    echo "    bash $REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh --kill"
+    echo "    bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_stop.sh --kill"
     echo ""
     echo "  ⚠️ 注意：--finish和--force和--kill都会自动停止watchdog（unload plist + kill进程）"
     echo "     如果只执行了默认模式（本模式），watchdog仍在运行——这是设计意图（守护collector）"
@@ -191,5 +192,5 @@ echo "=========================================="
 echo "  停止完成!"
 echo "=========================================="
 echo ""
-echo "  恢复: bash $REPO/xishujuzhen/solver_harness/pipe/pipe_start.sh"
+echo "  恢复: bash $SOLVER_REPO/xishujuzhen/solver_harness/pipe/pipe_start.sh"
 echo ""
