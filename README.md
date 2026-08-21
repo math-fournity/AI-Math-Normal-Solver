@@ -19,6 +19,7 @@
 | tier=1做题结果调查报告（调查方法+三大类分类统计+关键发现） | `dev-docs/402-v0-2026-08-21-tier1做题结果调查报告.md` |
 | 平凡解题系统队列准备方案（一次性入队3,448题，之后不启动feeder） | `dev-docs/403-v0-2026-08-21-平凡解题系统队列准备方案.md` |
 | 题目清洗系统方案（**已废弃**→改为取消泄漏检测，调查发现原始数据本身就包含答案） | `dev-docs/404-v0-2026-08-21-题目清洗系统方案.md` |
+| tier=1需要另外系统处理的题目查询报告（10,069题，查询方法+AQL+分类统计+交叉表） | `dev-docs/405-v0-2026-08-21-tier1需要另外系统处理的题目查询报告.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
