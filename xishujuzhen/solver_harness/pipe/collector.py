@@ -374,7 +374,17 @@ def classify(attempt_meta: dict, pane_text: str, pipe_text: str, is_running: boo
                     f"真实proof+无工具调用 elapsed={elapsed:.0f}s")
         return "candidate_solved", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "candidate_solved", "elapsed": elapsed}
 
-    # 3.5 Response truncated——AI输出达到max token limit，卡在"Send a message to continue"
+    # 3.5 Connection error——API连接错误，基础设施失败，必须优先于token_limit检测
+    # 因为连接错误的pane含"send a message to continue retrying"，
+    # 而TOKEN_LIMIT_PATTERNS中有"Send a message to continue"，会被误匹配
+    # 即使session还在运行（is_running=True），也要检测——否则会卡住直到timeout
+    for p in CONNECTION_PATTERNS:
+        if p.lower() in detect_lower:
+            logger.error(f"classify判定=failed_connection: problem_key={problem_key} exp_id={exp_id} "
+                         f"检测到连接错误标记 '{p}' elapsed={elapsed:.0f}s is_running={is_running}")
+            return "failed_connection", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "failed_connection", "elapsed": elapsed}
+
+    # 3.6 Response truncated——AI输出达到max token limit，卡在"Send a message to continue"
     # 即使session还在运行（is_running=True），也要检测——否则会卡住直到timeout
     for p in TOKEN_LIMIT_PATTERNS:
         if p.lower() in detect_lower:
@@ -382,7 +392,7 @@ def classify(attempt_meta: dict, pane_text: str, pipe_text: str, is_running: boo
                            f"检测到token/output limit标记 '{p}' elapsed={elapsed:.0f}s is_running={is_running}")
             return "failed_token_limit", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "failed_token_limit", "elapsed": elapsed}
 
-    # 3.6 Rate limit——API限流，即使session还在运行也要检测
+    # 3.7 Rate limit——API限流，即使session还在运行也要检测
     # 否则rate_limited的session要等到timeout(1800s)才会被处理，浪费并发槽位
     # 用detect_text（pane+pipe.log合并）检测——pipe.log有完整输出，pane可能滚走
     for p in RATE_LIMIT_PATTERNS:
@@ -405,6 +415,13 @@ def classify(attempt_meta: dict, pane_text: str, pipe_text: str, is_running: boo
     if not is_running:
         logger.debug(f"classify: tmux session已结束 problem_key={problem_key} exp_id={exp_id} 检查错误标记")
         # 检查基础设施错误（用detect_text=pane+pipe.log合并检测）
+        # 顺序：connection → rate_limit → token_limit
+        # connection必须优先于token_limit，因为连接错误pane含"send a message to continue"
+        for p in CONNECTION_PATTERNS:
+            if p.lower() in detect_lower:
+                logger.error(f"classify判定=failed_connection: problem_key={problem_key} exp_id={exp_id} "
+                             f"检测到连接错误标记 '{p}' elapsed={elapsed:.0f}s")
+                return "failed_connection", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "failed_connection", "elapsed": elapsed}
         for p in RATE_LIMIT_PATTERNS:
             if p.lower() in detect_lower:
                 logger.warning(f"classify判定=rate_limited: problem_key={problem_key} exp_id={exp_id} "
@@ -415,11 +432,6 @@ def classify(attempt_meta: dict, pane_text: str, pipe_text: str, is_running: boo
                 logger.warning(f"classify判定=failed_token_limit: problem_key={problem_key} exp_id={exp_id} "
                                f"检测到token limit标记 '{p}' elapsed={elapsed:.0f}s")
                 return "failed_token_limit", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "failed_token_limit", "elapsed": elapsed}
-        for p in CONNECTION_PATTERNS:
-            if p.lower() in detect_lower:
-                logger.error(f"classify判定=failed_connection: problem_key={problem_key} exp_id={exp_id} "
-                             f"检测到连接错误标记 '{p}' elapsed={elapsed:.0f}s")
-                return "failed_connection", {"problem_key": problem_key, "exp_id": exp_id, "verdict": "failed_connection", "elapsed": elapsed}
         # 没有错误标记——AI没做完就结束了
         logger.warning(f"classify判定=failed_no_proof: problem_key={problem_key} exp_id={exp_id} "
                        f"session结束但无错误标记也无proof elapsed={elapsed:.0f}s pane_len={pane_len}")
