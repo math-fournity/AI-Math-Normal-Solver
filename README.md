@@ -111,6 +111,7 @@
 | `recheck_final_queue.py` | 验证math:pending中的题是否都属于正确类别 | `python recheck_final_queue.py [--verbose]` |
 | `check_system_health.py` | 系统运行落盘一致性检查（Redis队列+ArangoDB+硬盘交叉验证+文件完整性） | `python check_system_health.py [--start-ts N]` |
 | `check_tier1_retention.py` | 检查全部tier=1题目的留存结果完整性（DB run记录+硬盘文件缺失） | `python check_tier1_retention.py [--verbose] [--export FILE]` |
+| `reenqueue_misclassified_connection.py` | 把1,111题误分类的连接错误重新入队（读pane确认+入pending+更新DB） | `python reenqueue_misclassified_connection.py [--dry-run]` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
