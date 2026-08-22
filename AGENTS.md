@@ -93,8 +93,18 @@ health检查中的"空pane僵尸"告警，绝大多数是处于thinking spin阶�
 devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进程crash等）。pipe系统已完整应对：
 
 - **collector判定**：devin cli退出但无proof → 判定为`dead_session`（`collector.py`第428-436行）；tmux session不存在且无`DEVIN_CLI_EXITED`且elapsed>60s → 判定为`crash_recovered`（第442-444行）
-- **retry自动重试**：`dead_session`/`launch_error`/`crash_recovered`属于基础设施失败（`INFRA_FAILURES`），`retry_infrastructure.py`会自动将它们重新入pending队列（最多`--max-retries 3`次）
+- **retry自动重试**：`dead_session`/`launch_error`/`crash_recovered`/`failed_connection`/`rate_limited`属于基础设施失败（`INFRA_FAILURES`），`retry_infrastructure.py`会自动将它们重新入pending队列（最多`--max-retries`次）
 - **模型能力失败不重试**：`failed_token_limit`/`ai_gave_up`/`failed_thinking_spin`等属于模型能力失败（`MODEL_FAILURES`），不重试，作为Profile数据保留
+
+### collector分类顺序：CONNECTION必须优先于TOKEN_LIMIT（2026-08-22修复）
+
+**历史bug**：collector的`classify_termination`函数中，`TOKEN_LIMIT_PATTERNS`检查在`CONNECTION_PATTERNS`之前。而`TOKEN_LIMIT_PATTERNS`含`"Send a message to continue"`，API连接错误的pane含`"send a message to continue retrying"`，导致连接错误被误匹配为`failed_token_limit`（模型能力失败），retry不会重试。
+
+**影响**：1,111题被误分类，从未被retry重试，没有thinking数据。已重新入队重跑。
+
+**修复**：`CONNECTION_PATTERNS`检查移到`TOKEN_LIMIT_PATTERNS`之前（两处：session运行时和session结束时）。
+
+**详见**：`dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md`§7
 
 ---
 
