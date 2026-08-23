@@ -106,6 +106,24 @@ devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进�
 
 **详见**：`dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md`§7
 
+### tier=1留存完整性检查脚本（权威脚本）
+
+**`xishujuzhen/solver_harness/pipe/scripts/check_tier1_retention.py`**——从硬盘 trajectory 目录的文件完整性开始检查 tier=1 全部题目的留存结果，是判断"哪些题需要重跑"的**权威脚本**。
+
+```bash
+# 检查全部tier=1题目的留存完整性（DB run记录 + 硬盘文件缺失交叉验证）
+PYTHONPATH=xishujuzhen/solver_harness/pipe /Users/user/glm5.2-math-worktree/.venv/bin/python3 \
+  xishujuzhen/solver_harness/pipe/scripts/check_tier1_retention.py
+# --verbose      列出所有缺失的题
+# --export FILE  导出缺失列表到JSON文件
+```
+
+**与 `check_tier1_remaining.py` 的关系**：
+- `check_tier1_remaining.py` 是**DB视角**——只查 DB run 记录的 status，认为 candidate_solved 都是"已解决"
+- `check_tier1_retention.py` 是**硬盘视角**——进一步检查 candidate_solved 的题在硬盘上是否真的有 conversation.json/pane_snapshot 等留存文件
+
+**关键认知**：DB视角会高估"已解决"题数。candidate_solved 中可能有题缺 export（无thinking数据）或缺 pane（无终态快照），这些题DB标记已解决但实际数据残缺，需要重跑补全。**判断"还有多少题需要重跑"时，必须以 `check_tier1_retention.py` 的硬盘视角为准。**
+
 ---
 
 ## 系统架构概要
