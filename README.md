@@ -121,6 +121,7 @@
 | `audit_solved_missing_assets.py` | 区分23道标准缺文件题中21道可复用和2道缺thinking | `python audit_solved_missing_assets.py --tier 1 --export FILE` |
 | `audit_empty_problem_sources.py` | 按external_ref验证452道DB空题的原始题面可恢复性 | `python audit_empty_problem_sources.py --tier 1 --export FILE` |
 | `audit_tier1_required_reruns.py` | **必须再次运行权威审计**：内容约束+旧batch复用+39,831守恒 | `python audit_tier1_required_reruns.py --tier 1 --export FILE` |
+| `audit_math_manify_peer_report.py` | 对math-manify业务报告做409交叉审计（9,828/9,914双口径、611漏run、5短题、91装载缺口） | `python audit_math_manify_peer_report.py --export FILE` |
 | `run_tier1_required_rerun_audit.sh` | 一键运行409号报告全部只读审计并生成JSON | `bash run_tier1_required_rerun_audit.sh OUTPUT_DIR` |
 | `reenqueue_misclassified_connection.py` | 把1,111题误分类的连接错误重新入队（读pane确认+入pending+更新DB） | `python reenqueue_misclassified_connection.py [--dry-run]` |
 | `reenqueue_failed_no_proof.py` | 把64题failed_no_proof无export的题重新入队（确认无export+入pending+更新DB） | `python reenqueue_failed_no_proof.py [--dry-run]` |
