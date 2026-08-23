@@ -106,23 +106,37 @@ devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进�
 
 **详见**：`dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md`§7
 
-### tier=1留存完整性检查脚本（权威脚本）
+### tier=1题目完成度7级分类标准（权威定义）
 
-**`xishujuzhen/solver_harness/pipe/scripts/check_tier1_retention.py`**——从硬盘 trajectory 目录的文件完整性开始检查 tier=1 全部题目的留存结果，是判断"哪些题需要重跑"的**权威脚本**。
+**`xishujuzhen/solver_harness/pipe/scripts/check_tier1_completion.py`**——融合DB run记录 + 硬盘文件完整性 + Redis队列verdict三数据源，给出每道题的权威完成度分类。**判断"还有多少题需要处理"时，以本脚本为准。**
 
 ```bash
-# 检查全部tier=1题目的留存完整性（DB run记录 + 硬盘文件缺失交叉验证）
 PYTHONPATH=xishujuzhen/solver_harness/pipe /Users/user/glm5.2-math-worktree/.venv/bin/python3 \
-  xishujuzhen/solver_harness/pipe/scripts/check_tier1_retention.py
-# --verbose      列出所有缺失的题
-# --export FILE  导出缺失列表到JSON文件
+  xishujuzhen/solver_harness/pipe/scripts/check_tier1_completion.py --tier 1
+# --verbose              列出各级别详细题目ID
+# --list-level LEVEL     只列出指定级别的题目（如 --list-level solved_missing_data）
+# --export FILE          导出完整分析结果到JSON文件
+# --no-file-check        快速模式，跳过硬盘文件检查
 ```
 
-**与 `check_tier1_remaining.py` 的关系**：
-- `check_tier1_remaining.py` 是**DB视角**——只查 DB run 记录的 status，认为 candidate_solved 都是"已解决"
-- `check_tier1_retention.py` 是**硬盘视角**——进一步检查 candidate_solved 的题在硬盘上是否真的有 conversation.json/pane_snapshot 等留存文件
+7级分类标准：
 
-**关键认知**：DB视角会高估"已解决"题数。candidate_solved 中可能有题缺 export（无thinking数据）或缺 pane（无终态快照），这些题DB标记已解决但实际数据残缺，需要重跑补全。**判断"还有多少题需要重跑"时，必须以 `check_tier1_retention.py` 的硬盘视角为准。**
+| 级别 | 名称 | 判定条件 | 需要做什么 |
+|---|---|---|---|
+| 1 | completed | candidate_solved + 硬盘文件完整 | 无需操作 |
+| 2 | solved_missing_data | candidate_solved + 缺关键文件 | 重跑补全数据 |
+| 3 | infra_failure | last run = 基础设施失败类 | 重跑 |
+| 4 | model_failure | last run = AI能力失败类 | Profile数据 |
+| 5 | empty_problem_text | 无run + Redis verdict=empty_problem_text | 修复题目数据 |
+| 6 | data_issue | last run = answer_leak类 | 不应重跑 |
+| 7 | never_run | 无run + 不在Redis队列 | 需入队 |
+
+**为什么需要统一标准**：`check_tier1_remaining.py`（DB视角）和 `check_tier1_retention.py`（硬盘视角）各看一个维度，对"完成度"理解不同——DB视角会高估已解决数（不检测缺文件），也不检测empty_problem_text（误将452题数据问题算入"应重试"）。本脚本融合三个数据源，给出统一权威分类，避免未来AI因用不同脚本得到矛盾结论。
+
+**三个脚本的关系**：
+- `check_tier1_completion.py` = **权威**——融合DB+硬盘+Redis，7级分类
+- `check_tier1_remaining.py` = DB子集视图——只看DB status，不检测文件完整性和empty_problem_text
+- `check_tier1_retention.py` = 硬盘子集视图——只看文件完整性，不检测empty_problem_text和重跑名单关系
 
 ---
 

@@ -112,6 +112,7 @@
 | `recheck_final_queue.py` | 验证math:pending中的题是否都属于正确类别 | `python recheck_final_queue.py [--verbose]` |
 | `check_system_health.py` | 系统运行落盘一致性检查（Redis队列+ArangoDB+硬盘交叉验证+文件完整性） | `python check_system_health.py [--start-ts N]` |
 | `check_tier1_retention.py` | 检查全部tier=1题目的留存结果完整性（DB run记录+硬盘文件缺失） | `python check_tier1_retention.py [--verbose] [--export FILE]` |
+| `check_tier1_completion.py` | **权威**：tier=1题目完成度7级分类（融合DB+硬盘+Redis三数据源） | `python check_tier1_completion.py --tier 1 [--verbose] [--list-level LEVEL] [--export FILE]` |
 | `reenqueue_misclassified_connection.py` | 把1,111题误分类的连接错误重新入队（读pane确认+入pending+更新DB） | `python reenqueue_misclassified_connection.py [--dry-run]` |
 | `reenqueue_failed_no_proof.py` | 把64题failed_no_proof无export的题重新入队（确认无export+入pending+更新DB） | `python reenqueue_failed_no_proof.py [--dry-run]` |
 | `analyze_rerun_vs_remaining.py` | 分析某次重跑后tier=1"应重试"池的变化（重跑名单vs应重试池交叉分析+empty_problem_text检测） | `python analyze_rerun_vs_remaining.py --tier 1 --rerun-since 2026-08-22T09:00:00Z [--verbose] [--export FILE]` |
