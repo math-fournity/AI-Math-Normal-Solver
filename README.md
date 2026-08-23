@@ -21,6 +21,7 @@
 | 题目清洗系统方案（**已废弃**→改为取消泄漏检测，调查发现原始数据本身就包含答案） | `dev-docs/404-v0-2026-08-21-题目清洗系统方案.md` |
 | tier=1需要另外系统处理的题目查询报告（10,069题，查询方法+AQL+分类统计+交叉表） | `dev-docs/405-v0-2026-08-21-tier1需要另外系统处理的题目查询报告.md` |
 | tier=1留存结果完整性调查报告（1,323项缺失，按status×文件交叉分析） | `dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md` |
+| tier=1重跑与"应重试"池关系调查报告（1,175题重跑vs607题应重试的交叉分析+452题empty_problem_text发现） | `dev-docs/407-v0-2026-08-23-tier1重跑与应重试关系调查报告.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
@@ -113,6 +114,7 @@
 | `check_tier1_retention.py` | 检查全部tier=1题目的留存结果完整性（DB run记录+硬盘文件缺失） | `python check_tier1_retention.py [--verbose] [--export FILE]` |
 | `reenqueue_misclassified_connection.py` | 把1,111题误分类的连接错误重新入队（读pane确认+入pending+更新DB） | `python reenqueue_misclassified_connection.py [--dry-run]` |
 | `reenqueue_failed_no_proof.py` | 把64题failed_no_proof无export的题重新入队（确认无export+入pending+更新DB） | `python reenqueue_failed_no_proof.py [--dry-run]` |
+| `analyze_rerun_vs_remaining.py` | 分析某次重跑后tier=1"应重试"池的变化（重跑名单vs应重试池交叉分析+empty_problem_text检测） | `python analyze_rerun_vs_remaining.py --tier 1 --rerun-since 2026-08-22T09:00:00Z [--verbose] [--export FILE]` |
 | `monitor_check.sh` | Monitor Pipe检查脚本 | `bash monitor_check.sh` |
 
 ### 已归档代码（`xishujuzhen/solver_harness/`根目录）
