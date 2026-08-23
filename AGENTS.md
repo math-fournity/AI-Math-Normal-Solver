@@ -106,17 +106,16 @@ devin cli偶尔会出现刚启动就退出的情况（如API连接失败、进�
 
 **详见**：`dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md`§7
 
-### tier=1题目完成度7级分类标准（权威定义）
+### tier=1题目完成度基础7级分类与必须重跑审计
 
-**`xishujuzhen/solver_harness/pipe/scripts/check_tier1_completion.py`**——融合DB run记录 + 硬盘文件完整性 + Redis队列verdict三数据源，给出每道题的权威完成度分类。**判断"还有多少题需要处理"时，以本脚本为准。**
+**基础7级脚本**：`check_tier1_completion.py`融合DB run记录 + 文件存在性 + Redis verdict。它不解析thinking/tool_calls，也不复用旧batch；可做日常基线，不能单独回答“必须再次运行多少题”。
+
+**必须再次运行权威审计**：`audit_tier1_required_reruns.py`解析export/trajectory/MITM/proof，执行“有thinking+有proof+零工具”约束，并按三种历史键复用合格旧batch。2026-08-23调查结果为584题，详见409号报告。执行队列动作前必须重新运行，不能永久沿用584这个动态数字。
 
 ```bash
 PYTHONPATH=xishujuzhen/solver_harness/pipe /Users/user/glm5.2-math-worktree/.venv/bin/python3 \
-  xishujuzhen/solver_harness/pipe/scripts/check_tier1_completion.py --tier 1
-# --verbose              列出各级别详细题目ID
-# --list-level LEVEL     只列出指定级别的题目（如 --list-level solved_missing_data）
-# --export FILE          导出完整分析结果到JSON文件
-# --no-file-check        快速模式，跳过硬盘文件检查
+  xishujuzhen/solver_harness/pipe/scripts/audit_tier1_required_reruns.py \
+  --tier 1 --export /tmp/tier1-required-reruns.json
 ```
 
 7级分类标准：
@@ -131,12 +130,14 @@ PYTHONPATH=xishujuzhen/solver_harness/pipe /Users/user/glm5.2-math-worktree/.ven
 | 6 | data_issue | last run = answer_leak类 | 不应重跑 |
 | 7 | never_run | 无run + 不在Redis队列 | 需入队 |
 
-**为什么需要统一标准**：`check_tier1_remaining.py`（DB视角）和 `check_tier1_retention.py`（硬盘视角）各看一个维度，对"完成度"理解不同——DB视角会高估已解决数（不检测缺文件），也不检测empty_problem_text（误将452题数据问题算入"应重试"）。本脚本融合三个数据源，给出统一权威分类，避免未来AI因用不同脚本得到矛盾结论。
+**409号调查修正**：基础7级会把23道标准缺文件题全部算作重跑（实际21道有完整替代资产）、漏掉285道含工具调用的candidate，并把452道已有旧batch记录的题视为无pipe run。判断必须运行范围时以409综合审计为准。
 
-**三个脚本的关系**：
-- `check_tier1_completion.py` = **权威**——融合DB+硬盘+Redis，7级分类
+**脚本关系**：
+- `audit_tier1_required_reruns.py` = **必须运行范围权威**——内容审计+旧batch复用+全量守恒
+- `check_tier1_completion.py` = 基础7级视图——DB+文件存在+Redis
 - `check_tier1_remaining.py` = DB子集视图——只看DB status，不检测文件完整性和empty_problem_text
 - `check_tier1_retention.py` = 硬盘子集视图——只看文件完整性，不检测empty_problem_text和重跑名单关系
+- `dev-docs/409-v0-2026-08-23-tier1必须再次运行题目全量调查报告.md` = 调查过程、口径、脚本索引和独立审计清单
 
 ---
 

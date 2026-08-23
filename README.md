@@ -23,6 +23,7 @@
 | tier=1留存结果完整性调查报告（1,323项缺失，按status×文件交叉分析） | `dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md` |
 | tier=1重跑与"应重试"池关系调查报告（1,175题重跑vs607题应重试的交叉分析+452题empty_problem_text发现） | `dev-docs/407-v0-2026-08-23-tier1重跑与应重试关系调查报告.md` |
 | tier=1完成题目检查方法与正确性风险（collector判定逻辑分析+不验证数学正确性的缺陷+验证方向） | `dev-docs/408-v0-2026-08-23-tier1完成题目检查方法与正确性风险.md` |
+| tier=1必须再次运行题目全量调查（内容级tool/thinking审计+旧batch复用+584题守恒结论+可复现脚本） | `dev-docs/409-v0-2026-08-23-tier1必须再次运行题目全量调查报告.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
@@ -113,7 +114,14 @@
 | `recheck_final_queue.py` | 验证math:pending中的题是否都属于正确类别 | `python recheck_final_queue.py [--verbose]` |
 | `check_system_health.py` | 系统运行落盘一致性检查（Redis队列+ArangoDB+硬盘交叉验证+文件完整性） | `python check_system_health.py [--start-ts N]` |
 | `check_tier1_retention.py` | 检查全部tier=1题目的留存结果完整性（DB run记录+硬盘文件缺失） | `python check_tier1_retention.py [--verbose] [--export FILE]` |
-| `check_tier1_completion.py` | **权威**：tier=1题目完成度7级分类（融合DB+硬盘+Redis三数据源） | `python check_tier1_completion.py --tier 1 [--verbose] [--list-level LEVEL] [--export FILE]` |
+| `check_tier1_completion.py` | tier=1基础7级分类（DB+文件存在+Redis；不解析tool/thinking、不复用旧batch） | `python check_tier1_completion.py --tier 1 [--verbose] [--list-level LEVEL] [--export FILE]` |
+| `tier1_audit_common.py` | 409审计公共模块：解析export/trajectory/MITM/proof，三键关联旧run | 被以下audit脚本import |
+| `audit_infra_retry_coverage.py` | 155道基础设施失败的retry次数、Redis覆盖和代码枚举差异 | `python audit_infra_retry_coverage.py --tier 1 --export FILE` |
+| `audit_candidate_tool_and_assets.py` | 全量解析candidate的thinking/proof/tool_calls并检查旧资产复用 | `python audit_candidate_tool_and_assets.py --tier 1 --export FILE` |
+| `audit_solved_missing_assets.py` | 区分23道标准缺文件题中21道可复用和2道缺thinking | `python audit_solved_missing_assets.py --tier 1 --export FILE` |
+| `audit_empty_problem_sources.py` | 按external_ref验证452道DB空题的原始题面可恢复性 | `python audit_empty_problem_sources.py --tier 1 --export FILE` |
+| `audit_tier1_required_reruns.py` | **必须再次运行权威审计**：内容约束+旧batch复用+39,831守恒 | `python audit_tier1_required_reruns.py --tier 1 --export FILE` |
+| `run_tier1_required_rerun_audit.sh` | 一键运行409号报告全部只读审计并生成JSON | `bash run_tier1_required_rerun_audit.sh OUTPUT_DIR` |
 | `reenqueue_misclassified_connection.py` | 把1,111题误分类的连接错误重新入队（读pane确认+入pending+更新DB） | `python reenqueue_misclassified_connection.py [--dry-run]` |
 | `reenqueue_failed_no_proof.py` | 把64题failed_no_proof无export的题重新入队（确认无export+入pending+更新DB） | `python reenqueue_failed_no_proof.py [--dry-run]` |
 | `analyze_rerun_vs_remaining.py` | 分析某次重跑后tier=1"应重试"池的变化（重跑名单vs应重试池交叉分析+empty_problem_text检测） | `python analyze_rerun_vs_remaining.py --tier 1 --rerun-since 2026-08-22T09:00:00Z [--verbose] [--export FILE]` |
