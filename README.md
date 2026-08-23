@@ -22,6 +22,7 @@
 | tier=1需要另外系统处理的题目查询报告（10,069题，查询方法+AQL+分类统计+交叉表） | `dev-docs/405-v0-2026-08-21-tier1需要另外系统处理的题目查询报告.md` |
 | tier=1留存结果完整性调查报告（1,323项缺失，按status×文件交叉分析） | `dev-docs/406-v0-2026-08-22-tier1留存结果完整性调查报告.md` |
 | tier=1重跑与"应重试"池关系调查报告（1,175题重跑vs607题应重试的交叉分析+452题empty_problem_text发现） | `dev-docs/407-v0-2026-08-23-tier1重跑与应重试关系调查报告.md` |
+| tier=1完成题目检查方法与正确性风险（collector判定逻辑分析+不验证数学正确性的缺陷+验证方向） | `dev-docs/408-v0-2026-08-23-tier1完成题目检查方法与正确性风险.md` |
 | 解析--export导出的conversation.json（ATIF格式，含reasoning_content=thinking） | `devin-cli-export-conversation.md` |
 | 解析sessions_db导出的trajectory.jsonl（JSONL格式，含thinking/tool_calls/tool行） | `trajectory-schema.md` |
 | conversation.json面包屑地图方案（结构未知时遍历） | `conversation-map.md` |
