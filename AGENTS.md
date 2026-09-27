@@ -4,7 +4,7 @@
 >
 > 本repo是平凡解题系统的独立repo，包含pipe系统代码、解题系统文档、solver相关skills和rules。任何AI进入本repo做解题系统运行/监控/调试/审计时，读完本文件即可接手。
 >
-> **详细结构信息（文档索引、代码索引、目录结构、skills/rules、操作经验）见 `README.md`。**
+> **详细结构信息（文档索引、代码索引、目录结构、skills/rules、操作经验）见 `docs/dev/AI-GUIDE.md`。系统公开全貌见根目录 `README.md`。**
 
 ---
 
