@@ -1,5 +1,7 @@
 # AI-Math-Normal-Solver
 
+> **从零恢复完整工作环境**（本仓库是仓库族之一）：按主仓库手册 [docs/RESTORE-GUIDE.md](https://github.com/math-fournity/AI-Math-Competition-Problem-Solving-System/blob/main/docs/RESTORE-GUIDE.md) 执行。
+
 平凡解题系统（Normal Solver）——AI 数学竞赛题解题的早期世代管线代码。以**固定服务管道
 （pipe）+ Redis 队列**批量跑题：一次入队数千题，devin cli 逐题解题，五服务协作完成投喂、
 监控、收集、报告与崩溃恢复；配套运行 SOP（编译验证/资产追溯/失败分类）与 16 种终态
